@@ -1,0 +1,14 @@
+[Unit]
+Description=NTU Cool to MS To Do Sync Service
+After=network-online.target
+
+[Service]
+Type=oneshot
+User=%i
+# Change this WorkingDirectory to where you cloned the repo
+WorkingDirectory=/opt/coolToReminder
+# Ensure the python path points to the virtual environment
+ExecStart=/opt/coolToReminder/venv/bin/python main.py sync
+StandardOutput=journal
+StandardError=journal
+Environment="PYTHONUNBUFFERED=1"

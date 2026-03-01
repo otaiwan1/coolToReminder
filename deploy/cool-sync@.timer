@@ -1,0 +1,13 @@
+[Unit]
+Description=Run NTU Cool to MS To Do Sync every hour
+
+[Timer]
+# Run exactly at the top of every hour
+OnCalendar=hourly
+# Or run every X minutes from boot:
+# OnBootSec=15min
+# OnUnitActiveSec=60min
+Persistent=true
+
+[Install]
+WantedBy=timers.target
