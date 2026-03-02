@@ -39,9 +39,11 @@ class TodoClient:
         resp.raise_for_status()
         return resp.json().get('id')
 
-    def create_task(self, list_id, assignment, reminder_minutes_before):
+    def create_task(self, list_id, assignment, reminder_minutes_before, extra_payload=None):
         """Create a new task in To Do."""
         payload = self._build_task_payload(assignment, reminder_minutes_before)
+        if extra_payload:
+            payload.update(extra_payload)
         
         url = f"{self.base_url}/me/todo/lists/{list_id}/tasks"
         response = self.session.post(url, headers=self.headers, json=payload)
@@ -51,9 +53,11 @@ class TodoClient:
         
         return response.json().get('id')
 
-    def update_task(self, list_id, task_id, assignment, reminder_minutes_before):
+    def update_task(self, list_id, task_id, assignment, reminder_minutes_before, extra_payload=None):
         """Update an existing task in To Do."""
         payload = self._build_task_payload(assignment, reminder_minutes_before)
+        if extra_payload:
+            payload.update(extra_payload)
         
         url = f"{self.base_url}/me/todo/lists/{list_id}/tasks/{task_id}"
         response = self.session.patch(url, headers=self.headers, json=payload)
@@ -75,13 +79,14 @@ class TodoClient:
             "body": {
                 "content": assignment['description'],
                 "contentType": "text"
-            },
-            # NTU time zone
-            "dueDateTime": {
+            }
+        }
+        
+        if assignment.get('due_date_iso'):
+            payload["dueDateTime"] = {
                 "dateTime": assignment['due_date_iso'],
                 "timeZone": "Asia/Taipei"
             }
-        }
         
         if due_dt and reminder_minutes_before > 0:
             try:

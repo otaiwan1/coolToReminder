@@ -2,6 +2,8 @@ import json
 import os
 from src.todo_client import TodoClient
 from src import config
+import requests
+from datetime import datetime
 
 class SyncEngine:
     def __init__(self, todo_client: TodoClient):
@@ -69,6 +71,9 @@ class SyncEngine:
                 print(f"Error syncing task '{assignment['title']}': {str(e)}")
                 stats["errors"] += 1
                 
+        # Update the sync status task
+        self._update_sync_status_task(list_id, stats)
+        
         # Persist state
         self._save_state()
         
@@ -77,3 +82,50 @@ class SyncEngine:
         print(f"Tasks Updated: {stats['updated']}")
         print(f"Tasks Skipped: {stats['skipped']}")
         print(f"Sync Errors:   {stats['errors']}")
+        
+    def _update_sync_status_task(self, list_id, stats):
+        try:
+            now_str = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            title = f"🔄 Last Sync: {now_str}"
+            body = (
+                f"✅ Last sync run at {now_str}.\n\n"
+                f"--- Stats for this run ---\n"
+                f"Tasks Created: {stats['created']}\n"
+                f"Tasks Updated: {stats['updated']}\n"
+                f"Tasks Skipped: {stats['skipped']}\n"
+                f"Sync Errors: {stats['errors']}\n\n"
+                "This task updates automatically for monitoring. If you check it off, it will be un-completed on the next run."
+            )
+            
+            pseudo_assignment = {
+                "title": title,
+                "description": body,
+                "due_date": None,
+                "due_date_iso": None
+            }
+            
+            uid = "__sync_status__"
+            task_id = self.state.get(uid, {}).get("taskId")
+            extra_payload = {"status": "notStarted"}
+            
+            if not task_id:
+                task_id = self.todo_client.create_task(list_id, pseudo_assignment, 0, extra_payload)
+                self.state[uid] = {"taskId": task_id}
+                print(f"Created sync status tracking task.")
+            else:
+                try:
+                    self.todo_client.update_task(list_id, task_id, pseudo_assignment, 0, extra_payload)
+                    print(f"Updated sync status tracking task.")
+                except requests.exceptions.HTTPError as e:
+                    if e.response.status_code == 404:
+                        # Task was deleted by the user, recreate it
+                        task_id = self.todo_client.create_task(list_id, pseudo_assignment, 0, extra_payload)
+                        self.state[uid] = {"taskId": task_id}
+                        print(f"Recreated missing sync status tracking task.")
+                    else:
+                        raise e
+        except Exception as e:
+            if hasattr(e, 'response') and e.response is not None:
+                print(f"Failed to update sync status tracking task: {e.response.status_code} - {e.response.text}")
+            else:
+                print(f"Failed to update sync status tracking task: {e}")
