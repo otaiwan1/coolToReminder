@@ -69,16 +69,15 @@ python main.py sync
    python main.py auth
    # 在你的電腦瀏覽器上完成 device code flow 登入
    ```
-5. 設定 Systemd Timer (每小時自動同步)：
+5. 自動設定背景執行 (Systemd Timer)：
+   工具內建了自動部署指令，會依照 `.env` 內的 `SYNC_INTERVAL_MINUTES` 設定背景定期執行的頻率（預設為 60 分鐘）。請**使用 sudo** 執行以下指令：
    ```bash
-   # 替換為你的使用者名稱 (假設你的 username 是 your_user)
-   sudo cp deploy/cool-sync@.service /etc/systemd/system/
-   sudo cp deploy/cool-sync@.timer /etc/systemd/system/
-   
-   sudo systemctl daemon-reload
-   sudo systemctl enable --now cool-sync@your_user.timer
+   sudo venv/bin/python main.py deploy
    ```
-   可透過 `sudo systemctl list-timers` 確認是否設定成功。
+   執行成功後，工具就會自動在背景定時執行。你可以隨時使用以下指令查看即時的同步紀錄：
+   ```bash
+   sudo journalctl -u coolsync.service -f
+   ```
 
 ---
 
