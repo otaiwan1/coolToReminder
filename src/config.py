@@ -6,8 +6,14 @@ load_dotenv()
 
 # Azure Settings
 CLIENT_ID = os.getenv("AZURE_CLIENT_ID")
-TENANT_ID = os.getenv("AZURE_TENANT_ID")
-AUTHORITY = f"https://login.microsoftonline.com/{TENANT_ID}" if TENANT_ID else "https://login.microsoftonline.com/common"
+TENANT_ID = os.getenv("AZURE_TENANT_ID", "common").strip()
+
+# If the app is registered for Personal Microsoft accounts only, it must use the /consumers endpoint
+if TENANT_ID.lower() in ["", "common", "consumers"]:
+    AUTHORITY = "https://login.microsoftonline.com/consumers"
+else:
+    AUTHORITY = f"https://login.microsoftonline.com/{TENANT_ID}"
+    
 SCOPES = ["Tasks.ReadWrite"]
 TOKEN_CACHE_FILE = ".token_cache.json"
 
