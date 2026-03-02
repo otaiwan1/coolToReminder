@@ -32,10 +32,10 @@ def main():
     subparsers = parser.add_subparsers(dest="command", help="Available commands")
     
     # Subcommand: auth
-    parser_auth = subparparsers.add_parser("auth", help="Perform initial device code authentication")
+    parser_auth = subparsers.add_parser("auth", help="Perform initial device code authentication")
     
     # Subcommand: sync
-    parser_sync = subparparsers.add_parser("sync", help="Run the sync engine")
+    parser_sync = subparsers.add_parser("sync", help="Run the sync engine")
     
     args = parser.parse_args()
     
