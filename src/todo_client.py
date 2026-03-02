@@ -2,6 +2,7 @@ import requests
 from requests.adapters import HTTPAdapter
 from urllib3.util.retry import Retry
 from datetime import timedelta
+from src.logger import logger
 
 class TodoClient:
     def __init__(self, access_token):
@@ -33,7 +34,7 @@ class TodoClient:
                 return l.get('id')
                 
         # Not found, create it
-        print(f"Creating To Do list: '{list_name}'")
+        logger.info(f"Creating To Do list: '{list_name}'")
         payload = {"displayName": list_name}
         resp = self.session.post(f"{self.base_url}/me/todo/lists", headers=self.headers, json=payload)
         resp.raise_for_status()
@@ -48,7 +49,7 @@ class TodoClient:
         url = f"{self.base_url}/me/todo/lists/{list_id}/tasks"
         response = self.session.post(url, headers=self.headers, json=payload)
         if not response.ok:
-            print(f"Failed to create task '{assignment['title']}': {response.text}")
+            logger.error(f"Failed to create task '{assignment['title']}': {response.text}")
         response.raise_for_status()
         
         return response.json().get('id')
@@ -62,7 +63,7 @@ class TodoClient:
         url = f"{self.base_url}/me/todo/lists/{list_id}/tasks/{task_id}"
         response = self.session.patch(url, headers=self.headers, json=payload)
         if not response.ok:
-            print(f"Failed to update task '{assignment['title']}': {response.text}")
+            logger.error(f"Failed to update task '{assignment['title']}': {response.text}")
         response.raise_for_status()
 
     def delete_task(self, list_id, task_id):

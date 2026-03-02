@@ -3,13 +3,14 @@ from icalendar import Calendar
 from datetime import datetime
 import hashlib
 import re
+from src.logger import logger
 
 def fetch_and_parse_ical(url: str):
     """Fetch iCal feed from URL and parse into a list of assignments."""
     if not url:
         raise ValueError("ICAL_FEED_URL is not set.")
         
-    print(f"Fetching iCal feed from: {url}")
+    logger.info(f"Fetching iCal feed from: {url}")
     response = requests.get(url)
     response.raise_for_status()
     
@@ -22,7 +23,7 @@ def fetch_and_parse_ical(url: str):
             # We skip events without a set due date / DTSTART since To Do tasks usually need dates
             assignments.append(assignment)
             
-    print(f"Parsed {len(assignments)} valid assignments from iCal feed.")
+    logger.info(f"Parsed {len(assignments)} valid assignments from iCal feed.")
     return assignments
 
 def extract_assignment_data(event):

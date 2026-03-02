@@ -2,6 +2,7 @@ import json
 import os
 import msal
 from src import config
+from src.logger import logger
 
 def _build_msal_app(cache=None):
     return msal.PublicClientApplication(
@@ -39,12 +40,12 @@ def get_access_token():
         result = app.acquire_token_silent(config.SCOPES, account=accounts[0])
 
     if not result:
-        print("No cached token found. Initiating device code flow...")
+        logger.info("No cached token found. Initiating device code flow...")
         flow = app.initiate_device_flow(scopes=config.SCOPES)
         if "user_code" not in flow:
             raise ValueError(f"Fail to create device flow. Err: {json.dumps(flow, indent=4)}")
 
-        print(flow.get("message"))
+        logger.info(flow.get("message"))
         
         # Block and wait for user authentication in browser
         result = app.acquire_token_by_device_flow(flow)

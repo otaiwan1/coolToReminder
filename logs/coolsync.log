@@ -1,0 +1,17 @@
+2026-03-02 22:47:52 [INFO] main: Checking authentication...
+2026-03-02 22:47:54 [INFO] main: Starting iCal synchronization...
+2026-03-02 22:47:54 [INFO] ical_parser: Fetching iCal feed from: https://cool.ntu.edu.tw/feeds/calendars/user_mbRq8xHqZshQgmX4P9kktBlRCPSaz5JMGvhIuslL.ics
+2026-03-02 22:47:55 [INFO] ical_parser: Parsed 4 valid assignments from iCal feed.
+2026-03-02 22:47:56 [INFO] todo_client: Creating To Do list: 'NTU Cool 作業'
+2026-03-02 22:47:57 [INFO] sync_engine: [1/4] No change for: 認證考核：期末報告 [Online0010]
+2026-03-02 22:47:57 [INFO] sync_engine: [2/4] No change for: 認證考核：期末報告 [Online0003]
+2026-03-02 22:47:57 [INFO] sync_engine: [3/4] No change for: 3-1 Space Curves and Their Tangents [微積分3 (MATH4008-02)]
+2026-03-02 22:47:57 [INFO] sync_engine: [4/4] No change for: Homework 1 [微積分3 (MATH4008-02)]
+2026-03-02 22:47:57 [ERROR] todo_client: Failed to update task '🔄 Last Sync: 2026-03-02 22:47:57': {"error":{"code":"itemNotFound","message":"Item not found","innerError":{"code":"FolderNotFound","date":"2026-03-02T14:47:57","request-id":"bda15cc7-2600-4db9-acfe-999c5616cb6f","client-request-id":"bda15cc7-2600-4db9-acfe-999c5616cb6f"}}}
+2026-03-02 22:47:58 [INFO] sync_engine: Recreated missing sync status tracking task.
+2026-03-02 22:47:58 [INFO] sync_engine: --- Sync Summary ---
+2026-03-02 22:47:58 [INFO] sync_engine: Tasks Created: 0
+2026-03-02 22:47:58 [INFO] sync_engine: Tasks Updated: 0
+2026-03-02 22:47:58 [INFO] sync_engine: Tasks Skipped: 4
+2026-03-02 22:47:58 [INFO] sync_engine: Sync Errors:   0
+2026-03-02 22:47:58 [INFO] main: Synchronization complete!

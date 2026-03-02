@@ -4,6 +4,7 @@ from src.todo_client import TodoClient
 from src import config
 import requests
 from datetime import datetime
+from src.logger import logger
 
 class SyncEngine:
     def __init__(self, todo_client: TodoClient):
@@ -38,7 +39,7 @@ class SyncEngine:
             try:
                 if uid not in self.state:
                     # New task
-                    print(f"[{idx+1}/{len(assignments)}] Creating new task: {assignment['title']}")
+                    logger.info(f"[{idx+1}/{len(assignments)}] Creating new task: {assignment['title']}")
                     task_id = self.todo_client.create_task(list_id, assignment, reminder_mins)
                     self.state[uid] = {
                         "taskId": task_id,
@@ -53,22 +54,22 @@ class SyncEngine:
                     
                     if not task_id:
                         # Corrupted state
-                        print(f"[{idx+1}/{len(assignments)}] Recovering orphaned task: {assignment['title']}")
+                        logger.warning(f"[{idx+1}/{len(assignments)}] Recovering orphaned task: {assignment['title']}")
                         task_id = self.todo_client.create_task(list_id, assignment, reminder_mins)
                         self.state[uid] = {"taskId": task_id, "hash": current_hash}
                         stats["created"] += 1
                     elif saved_hash != current_hash:
                         # Task content updated in Canvas
-                        print(f"[{idx+1}/{len(assignments)}] Updating changed task: {assignment['title']}")
+                        logger.info(f"[{idx+1}/{len(assignments)}] Updating changed task: {assignment['title']}")
                         self.todo_client.update_task(list_id, task_id, assignment, reminder_mins)
                         self.state[uid]['hash'] = current_hash
                         stats["updated"] += 1
                     else:
-                        print(f"[{idx+1}/{len(assignments)}] No change for: {assignment['title']}")
+                        logger.info(f"[{idx+1}/{len(assignments)}] No change for: {assignment['title']}")
                         stats["skipped"] += 1
 
             except Exception as e:
-                print(f"Error syncing task '{assignment['title']}': {str(e)}")
+                logger.error(f"Error syncing task '{assignment['title']}': {str(e)}")
                 stats["errors"] += 1
                 
         # Update the sync status task
@@ -77,11 +78,11 @@ class SyncEngine:
         # Persist state
         self._save_state()
         
-        print("\n--- Sync Summary ---")
-        print(f"Tasks Created: {stats['created']}")
-        print(f"Tasks Updated: {stats['updated']}")
-        print(f"Tasks Skipped: {stats['skipped']}")
-        print(f"Sync Errors:   {stats['errors']}")
+        logger.info("--- Sync Summary ---")
+        logger.info(f"Tasks Created: {stats['created']}")
+        logger.info(f"Tasks Updated: {stats['updated']}")
+        logger.info(f"Tasks Skipped: {stats['skipped']}")
+        logger.info(f"Sync Errors:   {stats['errors']}")
         
     def _update_sync_status_task(self, list_id, stats):
         try:
@@ -111,21 +112,21 @@ class SyncEngine:
             if not task_id:
                 task_id = self.todo_client.create_task(list_id, pseudo_assignment, 0, extra_payload)
                 self.state[uid] = {"taskId": task_id}
-                print(f"Created sync status tracking task.")
+                logger.info(f"Created sync status tracking task.")
             else:
                 try:
                     self.todo_client.update_task(list_id, task_id, pseudo_assignment, 0, extra_payload)
-                    print(f"Updated sync status tracking task.")
+                    logger.info(f"Updated sync status tracking task.")
                 except requests.exceptions.HTTPError as e:
                     if e.response.status_code == 404:
                         # Task was deleted by the user, recreate it
                         task_id = self.todo_client.create_task(list_id, pseudo_assignment, 0, extra_payload)
                         self.state[uid] = {"taskId": task_id}
-                        print(f"Recreated missing sync status tracking task.")
+                        logger.info(f"Recreated missing sync status tracking task.")
                     else:
                         raise e
         except Exception as e:
             if hasattr(e, 'response') and e.response is not None:
-                print(f"Failed to update sync status tracking task: {e.response.status_code} - {e.response.text}")
+                logger.error(f"Failed to update sync status tracking task: {e.response.status_code} - {e.response.text}")
             else:
-                print(f"Failed to update sync status tracking task: {e}")
+                logger.error(f"Failed to update sync status tracking task: {e}")
