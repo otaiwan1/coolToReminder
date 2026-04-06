@@ -21,6 +21,4 @@ sync_state.json
 .vscode/
 
 # logs
-logs/*
-*.log
-*.log.*
+logs/
