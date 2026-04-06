@@ -11,7 +11,7 @@ def fetch_and_parse_ical(url: str):
         raise ValueError("ICAL_FEED_URL is not set.")
         
     logger.info(f"Fetching iCal feed from: {url}")
-    response = requests.get(url)
+    response = requests.get(url, timeout=30)
     response.raise_for_status()
     
     calendar = Calendar.from_ical(response.content)

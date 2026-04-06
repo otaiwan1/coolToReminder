@@ -83,8 +83,9 @@ Persistent=true
 WantedBy=timers.target
 """
 
-    service_path = f"/etc/systemd/system/coolsync.service"
-    timer_path = f"/etc/systemd/system/coolsync.timer"
+    service_name = f"coolsync-{user}"
+    service_path = f"/etc/systemd/system/{service_name}.service"
+    timer_path = f"/etc/systemd/system/{service_name}.timer"
     
     try:
         with open(service_path, "w") as f:
@@ -97,10 +98,10 @@ WantedBy=timers.target
         
         # Reload daemon and enable timer
         subprocess.run(["systemctl", "daemon-reload"], check=True)
-        subprocess.run(["systemctl", "enable", "--now", "coolsync.timer"], check=True)
+        subprocess.run(["systemctl", "enable", "--now", f"{service_name}.timer"], check=True)
         
-        logger.info("✅ Deployment successful! The sync tool is now running in the background.")
-        logger.info("You can check the logs anytime using: sudo journalctl -u coolsync.service -f")
+        logger.info(f"✅ Deployment successful! The sync tool is now running in the background for {user}.")
+        logger.info(f"You can check the logs anytime using: sudo journalctl -u {service_name}.service -f")
     except Exception as e:
         logger.error(f"Deployment failed: {e}")
         sys.exit(1)

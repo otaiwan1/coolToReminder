@@ -25,7 +25,7 @@ class TodoClient:
         """Retrieve the ID of a task list by name, creating it if it doesn't exist."""
         # Clean up name if user specifies "Tasks" because Graph API uses "Tasks" as default
         # Getting all lists
-        response = self.session.get(f"{self.base_url}/me/todo/lists", headers=self.headers)
+        response = self.session.get(f"{self.base_url}/me/todo/lists", headers=self.headers, timeout=30)
         response.raise_for_status()
         
         lists = response.json().get('value', [])
