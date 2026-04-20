@@ -23,13 +23,13 @@ def setup_logger(log_file="coolsync.log", level=logging.INFO):
     console_handler.setFormatter(formatter)
     logger.addHandler(console_handler)
     
-    # File handler (Rotating: 5 MB per file, keep 3 backups)
+    # File handler (Timed Rotating: 1 day per file, keep 3 backups)
     # We put the log in a logs directory
     os.makedirs("logs", exist_ok=True)
     log_path = os.path.join("logs", log_file)
     
-    file_handler = logging.handlers.RotatingFileHandler(
-        log_path, maxBytes=5*1024*1024, backupCount=3, encoding='utf-8'
+    file_handler = logging.handlers.TimedRotatingFileHandler(
+        log_path, when='midnight', interval=1, backupCount=3, encoding='utf-8'
     )
     file_handler.setFormatter(formatter)
     logger.addHandler(file_handler)
