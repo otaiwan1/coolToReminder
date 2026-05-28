@@ -9,7 +9,6 @@ from src.todo_client import TodoClient
 from src.sync_engine import SyncEngine
 from src import config
 from src.logger import logger
-from src.logger import logger
 
 def cmd_auth():
     logger.info("Starting authentication flow...")
@@ -66,6 +65,7 @@ Type=oneshot
 User={user}
 WorkingDirectory={project_dir}
 ExecStart={python_exec} {project_dir}/main.py sync
+TimeoutStartSec=5min
 StandardOutput=journal
 StandardError=journal
 Environment="PYTHONUNBUFFERED=1"

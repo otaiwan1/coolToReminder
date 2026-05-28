@@ -61,7 +61,15 @@ class SyncEngine:
                     elif saved_hash != current_hash:
                         # Task content updated in Canvas
                         logger.info(f"[{idx+1}/{len(assignments)}] Updating changed task: {assignment['title']}")
-                        self.todo_client.update_task(list_id, task_id, assignment, reminder_mins)
+                        try:
+                            self.todo_client.update_task(list_id, task_id, assignment, reminder_mins)
+                        except requests.exceptions.HTTPError as e:
+                            if e.response is not None and e.response.status_code == 404:
+                                logger.warning(f"[{idx+1}/{len(assignments)}] Task missing in To Do, recreating: {assignment['title']}")
+                                task_id = self.todo_client.create_task(list_id, assignment, reminder_mins)
+                                self.state[uid]['taskId'] = task_id
+                            else:
+                                raise
                         self.state[uid]['hash'] = current_hash
                         stats["updated"] += 1
                     else:

@@ -3,6 +3,7 @@ from requests.adapters import HTTPAdapter
 from urllib3.util.retry import Retry
 from datetime import timedelta
 from src.logger import logger
+from src import config
 
 class TodoClient:
     def __init__(self, access_token):
@@ -11,6 +12,7 @@ class TodoClient:
             "Content-Type": "application/json"
         }
         self.base_url = "https://graph.microsoft.com/v1.0"
+        self.timeout = config.GRAPH_TIMEOUT_SECONDS
         
         # Setup session with retry logic for intermittent Graph API errors (e.g. 503)
         self.session = requests.Session()
@@ -25,7 +27,7 @@ class TodoClient:
         """Retrieve the ID of a task list by name, creating it if it doesn't exist."""
         # Clean up name if user specifies "Tasks" because Graph API uses "Tasks" as default
         # Getting all lists
-        response = self.session.get(f"{self.base_url}/me/todo/lists", headers=self.headers, timeout=30)
+        response = self.session.get(f"{self.base_url}/me/todo/lists", headers=self.headers, timeout=self.timeout)
         response.raise_for_status()
         
         lists = response.json().get('value', [])
@@ -36,7 +38,7 @@ class TodoClient:
         # Not found, create it
         logger.info(f"Creating To Do list: '{list_name}'")
         payload = {"displayName": list_name}
-        resp = self.session.post(f"{self.base_url}/me/todo/lists", headers=self.headers, json=payload)
+        resp = self.session.post(f"{self.base_url}/me/todo/lists", headers=self.headers, json=payload, timeout=self.timeout)
         resp.raise_for_status()
         return resp.json().get('id')
 
@@ -47,7 +49,7 @@ class TodoClient:
             payload.update(extra_payload)
         
         url = f"{self.base_url}/me/todo/lists/{list_id}/tasks"
-        response = self.session.post(url, headers=self.headers, json=payload)
+        response = self.session.post(url, headers=self.headers, json=payload, timeout=self.timeout)
         if not response.ok:
             logger.error(f"Failed to create task '{assignment['title']}': {response.text}")
         response.raise_for_status()
@@ -61,7 +63,7 @@ class TodoClient:
             payload.update(extra_payload)
         
         url = f"{self.base_url}/me/todo/lists/{list_id}/tasks/{task_id}"
-        response = self.session.patch(url, headers=self.headers, json=payload)
+        response = self.session.patch(url, headers=self.headers, json=payload, timeout=self.timeout)
         if not response.ok:
             logger.error(f"Failed to update task '{assignment['title']}': {response.text}")
         response.raise_for_status()
@@ -69,7 +71,7 @@ class TodoClient:
     def delete_task(self, list_id, task_id):
         """Delete an existing task in To Do (Optional, in case event is removed)."""
         url = f"{self.base_url}/me/todo/lists/{list_id}/tasks/{task_id}"
-        response = self.session.delete(url, headers=self.headers)
+        response = self.session.delete(url, headers=self.headers, timeout=self.timeout)
         response.raise_for_status()
 
     def _build_task_payload(self, assignment, reminder_minutes_before):
